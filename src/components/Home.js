@@ -8,7 +8,7 @@ import { FaChevronDown, FaSearchengin } from "react-icons/fa6";
 
 const Home = () => {
     const [toggleSideBar, setToggleSideBar] = useState(false)
-    const [user, setUser] = useState([])
+    const [user, setUser] = useState(null)
     return (
         <>
             <div className={`w-2 ${toggleSideBar ? "w-2" : "flex-[.2] xl:flex-[.2]"} min-h-screen max-h-screen relative bg-secondary px-3 py-6 flex flex-col items-center justify-start gap-4 transition-all duration-200 ease-in-out`}>

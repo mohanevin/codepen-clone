@@ -16,9 +16,10 @@ function App() {
           element:<Projects/>
         },
         {
-          element:"auth",
+          path:"auth",
           element:<SignUp/>
-        }
+        },
+        
       ]
     },
     {

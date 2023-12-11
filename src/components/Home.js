@@ -5,12 +5,44 @@ import { Link, Outlet } from 'react-router-dom'
 import { logo } from '../assets'
 import { MdHome } from "react-icons/md";
 import { FaChevronDown, FaSearchengin } from "react-icons/fa6";
+import { useEffect } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth, db } from '../config/firebase.config'
+import { useNavigate } from 'react-router-dom'
+import { doc, setDoc } from 'firebase/firestore'
+import Spinner from './Spinner'
+import { useDispatch, useSelector } from 'react-redux'
+import { adduser } from '../redux/userSlice'
+import UserProfile from './UserProfile'
 
 const Home = () => {
+    const user=useSelector((store)=>store.user)
+    console.log(user);
     const [toggleSideBar, setToggleSideBar] = useState(false)
-    const [user, setUser] = useState(null)
+    const [isLoading,setIsLoading]=useState(true)
+    const navigate = useNavigate()
+    const dispatch=useDispatch()
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log(user.providerData[0]);
+                setDoc(doc(db,"users",user?.uid),user.providerData[0]).then(()=>{
+                    dispatch(adduser(user.providerData[0]))
+                    navigate("/home/projects",{replace:true})
+                })
+            }
+            else {
+                navigate("/home/auth",{replace:true})
+            }
+            setInterval(() => {
+                setIsLoading(false);
+              }, 2000);
+        })
+        return ()=> unsubscribe()
+    }, [])
     return (
-        <>
+        <> {isLoading?<div className='w-screen h-screen flex items-center justify-center'><Spinner/></div>:
+            <>
             <div className={`w-2 ${toggleSideBar ? "w-2" : "flex-[.2] xl:flex-[.2]"} min-h-screen max-h-screen relative bg-secondary px-3 py-6 flex flex-col items-center justify-start gap-4 transition-all duration-200 ease-in-out`}>
                 <motion.div whileTap={{ scale: .9 }} onClick={() => setToggleSideBar(!toggleSideBar)} className='w-8 h-8 bg-secondary absolute -right-6 rounded-tr-lg rounded=br-lg cursor-pointer flex items-center justify-center'>
                     <HiChevronDoubleLeft className='text-white text=xl' />
@@ -50,13 +82,14 @@ const Home = () => {
                             </Link>
                         </div>
                     )}
-
+                {user && <UserProfile/>}
                 </div>
                 <div className='w-full'>
                     <Outlet />
                 </div>
             </div>
-
+            </>
+            }
         </>
     )
 }

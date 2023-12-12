@@ -9,11 +9,17 @@ import { useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../config/firebase.config'
 import { useNavigate } from 'react-router-dom'
-import { doc, setDoc } from 'firebase/firestore'
+import {  collection,
+    doc,
+    onSnapshot,
+    orderBy,
+    query,
+    setDoc,} from 'firebase/firestore'
 import Spinner from './Spinner'
 import { useDispatch, useSelector } from 'react-redux'
 import { adduser } from '../redux/userSlice'
 import UserProfile from './UserProfile'
+import { addProjects } from '../redux/projectSlice'
 
 const Home = () => {
     const user=useSelector((store)=>store.user)
@@ -40,6 +46,20 @@ const Home = () => {
         })
         return ()=> unsubscribe()
     }, [])
+
+    useEffect(() => {
+        const projectQuery = query(
+          collection(db, "Projects"),
+          orderBy("id", "desc")
+        );
+    
+        const unsubscribe = onSnapshot(projectQuery, (querySnap) => {
+          const projectsList = querySnap.docs.map((doc) => doc.data());
+          dispatch(addProjects(projectsList));
+        });
+    
+        return unsubscribe;
+      }, []);
     return (
         <> {isLoading?<div className='w-screen h-screen flex items-center justify-center'><Spinner/></div>:
             <>
